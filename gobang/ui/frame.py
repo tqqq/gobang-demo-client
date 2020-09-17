@@ -6,6 +6,7 @@ import time
 
 
 from gobang.control.login import user_login
+from gobang.control.match import join_match_queue, quit_match_queue
 
 
 class LoginFrame:
@@ -46,11 +47,7 @@ class LoginFrame:
             MessageBox.showinfo('info', 'User Name or Password too short')
             return
 
-        try:
-            result = user_login(user_name=user_name, password=password)
-        except Exception as e:
-            MessageBox.showinfo('info', str(e))
-            return
+        result = user_login(user_name=user_name, password=password)
 
         status = result.get('status')
         if not status:
@@ -225,12 +222,16 @@ class IndexFrame:
     label_user_name = None
     label_user_info = None
     button_play = None
+    button_cancel = None
+    label_play_status = None
     user = None
 
     def __init__(self, super_window, user):
         self.frame = Frame(super_window)
+        self.user = user
         self.frame.place(x=0, y=0, width=1000, height=800)
         self.init_frame()
+        self.update_user_info()
 
 
     def init_frame(self):
@@ -239,27 +240,67 @@ class IndexFrame:
         self.label_user_info = Label(self.frame, bg='#FFFFFF', justify=LEFT, font='Verdana 10')
 
         self.button_play = Button(self.frame, bg='#555555', fg='#000000', text='play', command=self.on_button_play_click)
-
+        self.button_cancel = Button(self.frame, bg='#555555', fg='#000000', text='cancel', command=self.on_button_cancel_click)
+        self.label_play_status = Label(self.frame, bg='#FFFFFF', text='finding match...', justify=LEFT, font='Verdana 10')
         self.label_user_name.pack()
         self.label_user_info.pack()
+        self.label_play_status.pack()
         self.button_play.pack()
+        self.button_cancel.pack()
+
+        self.button_cancel.pack_forget()
+        self.label_play_status.pack_forget()
 
 
+    def update_user_info(self, user=None):
 
+        if user:
+            for k, v in user:
+                self.user[k] = v
 
-    def update_user_info(self, user):
-        user_name = user.get('name')
-        user_rank = user.get('rank')
+        user_name = self.user.get('name')
+        user_rank = self.user.get('rank')
         if user_name:
             self.label_user_name['text'] = user_name
         if user_rank:
             self.label_user_info['text'] = user_rank
 
 
-
-
-
     def on_button_play_click(self):
-        print("index play clicked")
+
+        result = join_match_queue(user=self.user)
+
+        status = result.get('status')
+        if not status:
+            MessageBox.showinfo('info', result.get('message'))
+            return
+
+        self.button_play.pack_forget()
+        self.button_cancel.pack()
+        self.label_play_status.pack()
+
+
+        # loop to get match
+
+
+
+
+
+    def on_button_cancel_click(self):
+
+        status = False
+
+        while status:
+
+            result = quit_match_queue(user=self.user)
+
+            if result.get('status'):
+                status = True
+
+        self.button_cancel.pack_forget()
+        self.label_play_status.pack_forget()
+        self.button_play.pack()
+
+        print("index quit clicked")
 
 
