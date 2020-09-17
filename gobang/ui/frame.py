@@ -3,10 +3,11 @@
 from tkinter import *
 from tkinter import messagebox as MessageBox
 import time
+from threading import Thread
 
 
 from gobang.control.login import user_login
-from gobang.control.match import join_match_queue, quit_match_queue
+from gobang.control.match import join_match_queue, quit_match_queue, get_match
 
 
 class LoginFrame:
@@ -63,6 +64,9 @@ class LoginFrame:
 
 class ChessFrame:
 
+    user = None
+    match = None
+
     frame = None
 
     canvas = None
@@ -78,7 +82,11 @@ class ChessFrame:
     button_play = None
     button_leave = None
 
-    def __init__(self, super_window):
+
+    def __init__(self, super_window, user, match):
+        self.super_window = super_window
+        self.user = user
+        self.match = match
         self.frame = Frame(super_window)
         self.frame.place(x=0, y=0, width=1000, height=800)
         self.init_frame()
@@ -91,7 +99,7 @@ class ChessFrame:
         self.canvas = Canvas(self.frame, bg='#EEE8AA', cursor='circle', width=480, height=480, highlightthickness=0)
         self.canvas.place(x=30, y=30)
 
-        # 绑定监听事件
+        # 棋盘canvas绑定监听事件
         self.canvas.bind("<Button-1>", self.on_canvas_click)
 
         for i in range(15):
@@ -123,6 +131,10 @@ class ChessFrame:
         # 设置为不可见
         self.button_play.place_forget()
         self.button_leave.place_forget()
+
+        # 显示玩家信息
+        self.label_player1_name['text'] = self.match.get('player1').get('name')
+        self.label_player2_name['text'] = self.match.get('player2').get('name')
 
 
     def init_user_info(self, match):
@@ -227,6 +239,7 @@ class IndexFrame:
     user = None
 
     def __init__(self, super_window, user):
+        self.super_window = super_window
         self.frame = Frame(super_window)
         self.user = user
         self.frame.place(x=0, y=0, width=1000, height=800)
@@ -281,8 +294,18 @@ class IndexFrame:
 
 
         # loop to get match
+        get_match_thread = Thread(target=self.get_match)
+        get_match_thread.start()
 
 
+    def get_match(self):
+        result = get_match(user=self.user)
+
+        if result.get('status'):
+            match = result.get('match')
+
+            ChessFrame(super_window=self.super_window, user=self.user, match=match)
+            self.frame.destroy()
 
 
 
