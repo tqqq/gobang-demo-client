@@ -1,14 +1,73 @@
 # coding=utf-8
 
 from tkinter import *
+from tkinter import messagebox as MessageBox
+import time
 
 
-class ChessWindow:
+from gobang.control.login import get_login_user_info
+
+
+class LoginFrame:
+
+    frame = None
+    entry_user_name = None
+    entry_password = None
+    button_login = None
+
+
+    def __init__(self, super_window):
+        self.frame = Frame(super_window)
+        self.frame.place(x=0, y=0, width=1000, height=800)
+        self.init_frame()
+
+
+
+    def init_frame(self):
+
+        e1 = StringVar()
+        e2 = StringVar()
+        self.entry_user_name = Entry(self.frame, textvariable=e1)
+        e1.set('user name')
+        self.entry_password = Entry(self.frame, textvariable=e2)
+        e2.set('password')
+        self.entry_user_name.pack()
+        self.entry_password.pack()
+
+        self.button_login = Button(self.frame, text='LOGIN', activebackground='#EEEEEE', command=self.on_button_login_click)
+        self.button_login.pack()
+
+
+    def on_button_login_click(self):
+        user_name = self.entry_user_name.get()
+        password = self.entry_password.get()
+
+        if len(user_name) < 2 or len(password) < 2:
+            MessageBox.showinfo('info', 'User Name or Password too short')
+            return
+
+        try:
+            user = get_login_user_info(user_name=user_name, password=password)
+        except Exception as e:
+            return
+
+
+
+
+
+        time.sleep(2)
+        print('123')
+        pass
+
+
+class ChessFrame:
+
+    frame = None
 
     canvas = None
     chessboard = []
-    rows = 15    # 行数
-    size = 30    # 每一格的大小
+    rows = 15  # 行数
+    size = 30  # 每一格的大小
 
     label_player1_name = None
     label_player2_name = None
@@ -18,22 +77,17 @@ class ChessWindow:
     button_play = None
     button_leave = None
 
+    def __init__(self, super_window):
+        self.frame = Frame(super_window)
+        self.frame.place(x=0, y=0, width=1000, height=800)
+        self.init_frame()
 
+    def init_frame(self):
 
-
-    def __init__(self, init_name):
-        self.super_window = init_name
-
-
-    def init_chessboard(self):
-
-        # 窗口
-        self.super_window.title("GOBANG GAME")
-        self.super_window.geometry('1000x800+10+10')  # 窗口宽高，to_up/to_left
-        self.super_window['bg'] = '#FFFFFF'  # 背景颜色
+        self.frame['bg'] = '#FFFFFF'  # 背景颜色
 
         # 绘制棋盘
-        self.canvas = Canvas(self.super_window, bg='#EEE8AA', cursor='circle', width=480, height=480, highlightthickness=0)
+        self.canvas = Canvas(self.frame, bg='#EEE8AA', cursor='circle', width=480, height=480, highlightthickness=0)
         self.canvas.place(x=30, y=30)
 
         # 绑定监听事件
@@ -48,10 +102,10 @@ class ChessWindow:
             self.canvas.create_line(x3, y3, x4, y4)
 
         # play name label
-        self.label_player1_name = Label(self.super_window, bg='#FFFFFF', justify=LEFT, font='Verdana 10')
-        self.label_player2_name = Label(self.super_window, bg='#FFFFFF', justify=LEFT, font='Verdana 10')
-        self.label_player1_time = Label(self.super_window, bg='#FFFFFF', justify=LEFT, font='Verdana 14 bold')
-        self.label_player2_time = Label(self.super_window, bg='#FFFFFF', justify=LEFT, font='Verdana 14 bold')
+        self.label_player1_name = Label(self.frame, bg='#FFFFFF', justify=LEFT, font='Verdana 10')
+        self.label_player2_name = Label(self.frame, bg='#FFFFFF', justify=LEFT, font='Verdana 10')
+        self.label_player1_time = Label(self.frame, bg='#FFFFFF', justify=LEFT, font='Verdana 14 bold')
+        self.label_player2_time = Label(self.frame, bg='#FFFFFF', justify=LEFT, font='Verdana 14 bold')
 
         self.label_player1_name.place(x=640, y=40, width=80, height=30)
         self.label_player1_time.place(x=560, y=30, width=40, height=40)
@@ -59,8 +113,8 @@ class ChessWindow:
         self.label_player2_time.place(x=560, y=300, width=40, height=40)
 
         # restart button, leave button
-        self.button_play = Button(self.super_window, bg='#555555', fg='#000000', text='play', command=self.on_button_play_click)
-        self.button_leave = Button(self.super_window, bg='#555555', fg='#000000', text='leave', command=self.on_button_leave_click)
+        self.button_play = Button(self.frame, bg='#555555', fg='#000000', text='play', command=self.on_button_play_click)
+        self.button_leave = Button(self.frame, bg='#555555', fg='#000000', text='leave', command=self.on_button_leave_click)
 
         self.button_play.place(x=190, y=570, width=60, height=30)
         self.button_leave.place(x=290, y=570, width=60, height=30)
@@ -161,7 +215,46 @@ class ChessWindow:
         pass
 
 
+class IndexFrame:
+
+    frame = None
+    label_user_name = None
+    label_user_info = None
+    button_play = None
+
+    def __init__(self, super_window):
+        self.frame = Frame(super_window)
+        self.frame.place(x=0, y=0, width=1000, height=800)
+        self.init_frame()
 
 
+    def init_frame(self):
+
+        self.label_user_name = Label(self.frame, bg='#FFFFFF', justify=LEFT, font='Verdana 10')
+        self.label_user_info = Label(self.frame, bg='#FFFFFF', justify=LEFT, font='Verdana 10')
+
+        self.button_play = Button(self.frame, bg='#555555', fg='#000000', text='play', command=self.on_button_play_click)
+
+        self.label_user_name.pack()
+        self.label_user_info.pack()
+        self.button_play.pack()
+
+
+
+
+    def update_user_info(self, user):
+        user_name = user.get('name')
+        user_rank = user.get('rank')
+        if user_name:
+            self.label_user_name['text'] = user_name
+        if user_rank:
+            self.label_user_info['text'] = user_rank
+
+
+
+
+
+    def on_button_play_click(self):
+        print("index play clicked")
 
 
