@@ -5,7 +5,7 @@ from tkinter import messagebox as MessageBox
 import time
 
 
-from gobang.control.login import get_login_user_info
+from gobang.control.login import user_login
 
 
 class LoginFrame:
@@ -17,6 +17,7 @@ class LoginFrame:
 
 
     def __init__(self, super_window):
+        self.super_window = super_window
         self.frame = Frame(super_window)
         self.frame.place(x=0, y=0, width=1000, height=800)
         self.init_frame()
@@ -34,30 +35,33 @@ class LoginFrame:
         self.entry_user_name.pack()
         self.entry_password.pack()
 
-        self.button_login = Button(self.frame, text='LOGIN', activebackground='#EEEEEE', command=self.on_button_login_click)
+        self.button_login = Button(self.frame, text='LOGIN', bg='#555555', fg='#000000', command=self.on_button_login_click)
         self.button_login.pack()
 
 
     def on_button_login_click(self):
         user_name = self.entry_user_name.get()
         password = self.entry_password.get()
-
         if len(user_name) < 2 or len(password) < 2:
             MessageBox.showinfo('info', 'User Name or Password too short')
             return
 
         try:
-            user = get_login_user_info(user_name=user_name, password=password)
+            result = user_login(user_name=user_name, password=password)
         except Exception as e:
+            MessageBox.showinfo('info', str(e))
             return
 
+        status = result.get('status')
+        if not status:
+            MessageBox.showinfo('info', result.get('message'))
+            return
 
+        user = result.get('user')
+        if user:
+            IndexFrame(super_window=self.super_window, user=user)
+            self.frame.destroy()
 
-
-
-        time.sleep(2)
-        print('123')
-        pass
 
 
 class ChessFrame:
@@ -221,8 +225,9 @@ class IndexFrame:
     label_user_name = None
     label_user_info = None
     button_play = None
+    user = None
 
-    def __init__(self, super_window):
+    def __init__(self, super_window, user):
         self.frame = Frame(super_window)
         self.frame.place(x=0, y=0, width=1000, height=800)
         self.init_frame()
